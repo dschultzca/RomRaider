@@ -19,29 +19,9 @@
 
 package com.romraider.editor.ecu;
 
-import com.centerkey.utils.BareBonesBrowserLaunch;
-import com.romraider.Settings;
 import static com.romraider.Version.ECU_DEFS_URL;
 import static com.romraider.Version.PRODUCT_NAME;
 import static com.romraider.Version.VERSION;
-import com.romraider.logger.ecu.ui.handler.table.TableUpdateHandler;
-import com.romraider.maps.Rom;
-import com.romraider.maps.Table;
-import com.romraider.net.URL;
-import com.romraider.swing.AbstractFrame;
-import com.romraider.swing.ECUEditorMenuBar;
-import com.romraider.swing.ECUEditorToolBar;
-import com.romraider.swing.JProgressPane;
-import com.romraider.swing.MDIDesktopPane;
-import com.romraider.swing.RomTree;
-import com.romraider.swing.RomTreeNode;
-import com.romraider.swing.RomTreeRootNode;
-import com.romraider.swing.TableFrame;
-import com.romraider.util.SettingsManager;
-import com.romraider.util.SettingsManagerImpl;
-import com.romraider.xml.DOMRomUnmarshaller;
-import com.romraider.xml.RomNotFoundException;
-import com.sun.org.apache.xerces.internal.parsers.DOMParser;
 import static javax.swing.JOptionPane.DEFAULT_OPTION;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import static javax.swing.JOptionPane.INFORMATION_MESSAGE;
@@ -82,6 +62,27 @@ import javax.swing.tree.TreePath;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
+
+import com.centerkey.utils.BareBonesBrowserLaunch;
+import com.romraider.Settings;
+import com.romraider.logger.ecu.ui.handler.table.TableUpdateHandler;
+import com.romraider.maps.Rom;
+import com.romraider.maps.Table;
+import com.romraider.net.URL;
+import com.romraider.swing.AbstractFrame;
+import com.romraider.swing.ECUEditorMenuBar;
+import com.romraider.swing.ECUEditorToolBar;
+import com.romraider.swing.JProgressPane;
+import com.romraider.swing.MDIDesktopPane;
+import com.romraider.swing.RomTree;
+import com.romraider.swing.RomTreeNode;
+import com.romraider.swing.RomTreeRootNode;
+import com.romraider.swing.TableFrame;
+import com.romraider.util.SettingsManager;
+import com.romraider.util.SettingsManagerImpl;
+import com.romraider.xml.DOMRomUnmarshaller;
+import com.romraider.xml.RomNotFoundException;
+import com.sun.org.apache.xerces.internal.parsers.DOMParser;
 
 public class ECUEditor extends AbstractFrame {
     private static final long serialVersionUID = -7826850987392016292L;
@@ -209,25 +210,32 @@ public class ECUEditor extends AbstractFrame {
         repaint();
     }
 
+    @Override
     public void windowClosing(WindowEvent e) {
         handleExit();
     }
 
+    @Override
     public void windowOpened(WindowEvent e) {
     }
 
+    @Override
     public void windowClosed(WindowEvent e) {
     }
 
+    @Override
     public void windowIconified(WindowEvent e) {
     }
 
+    @Override
     public void windowDeiconified(WindowEvent e) {
     }
 
+    @Override
     public void windowActivated(WindowEvent e) {
     }
 
+    @Override
     public void windowDeactivated(WindowEvent e) {
     }
 
@@ -261,11 +269,12 @@ public class ECUEditor extends AbstractFrame {
             check.setHorizontalAlignment(JCheckBox.RIGHT);
 
             check.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     settings.setObsoleteWarning(((JCheckBox) e.getSource()).isSelected());
                 }
             }
-            );
+                    );
 
             infoPanel.add(check);
             showMessageDialog(this, infoPanel, "ECU Revision is Obsolete", INFORMATION_MESSAGE);
@@ -384,6 +393,7 @@ public class ECUEditor extends AbstractFrame {
         return images;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         imageList.updateUI();
         imageList.repaint();
@@ -437,11 +447,11 @@ public class ECUEditor extends AbstractFrame {
 
         } catch (StackOverflowError ex) {
             // handles looped inheritance, which will use up all available memory
-            showMessageDialog(this, "Looped \"base\" attribute in XML definitions.", "Error Loading " + inputFile.getName(), ERROR_MESSAGE);
+            showMessageDialog(this, "Looped \"base\" attribute in XML definitions.", "Error Loading "+inputFile.getName(), ERROR_MESSAGE);
 
         } catch (OutOfMemoryError ome) {
             // handles Java heap space issues when loading multiple Roms.
-            showMessageDialog(this, "Error loading Image. Out of memeory.", "Error Loading " + inputFile.getName(), ERROR_MESSAGE);
+            showMessageDialog(this, "Error loading Image. Out of memeory.", "Error Loading "+inputFile.getName(), ERROR_MESSAGE);
 
         } finally {
             // remove progress bar
@@ -455,7 +465,7 @@ public class ECUEditor extends AbstractFrame {
             showMessageDialog(this, "Image Not Found", "Error Loading Image(s)", ERROR_MESSAGE);
             return;
         }
-        for(int j = 0; j < inputFiles.length; j++) {
+        for(int j=0;j<inputFiles.length;j++) {
             openImage(inputFiles[j]);
         }
     }
