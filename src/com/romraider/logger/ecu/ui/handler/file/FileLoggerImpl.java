@@ -80,10 +80,10 @@ public final class FileLoggerImpl implements FileLogger {
     }
 
     public void writeHeaders(String headers) {
-    	String timeHeader = "Time";
-    	if (!settings.isFileLoggingAbsoluteTimestamp()) {
-    		timeHeader = timeHeader  + " (msec)";
-    	}
+        String timeHeader = "Time";
+        if (!settings.isFileLoggingAbsoluteTimestamp()) {
+            timeHeader = timeHeader  + " (msec)";
+        }
         writeText(timeHeader + headers);
     }
 
@@ -124,9 +124,10 @@ public final class FileLoggerImpl implements FileLogger {
         if (!logDir.endsWith(File.separator)) {
             logDir += File.separator;
         }
-    	logDir += "romraiderlog_";
-        if (!settings.getLogfileNameText().isEmpty()) {
-        	logDir += settings.getLogfileNameText() + "_"; 
+        logDir += "romraiderlog_";
+        if (settings.getLogfileNameText() != null
+                && !settings.getLogfileNameText().isEmpty()) {
+            logDir += settings.getLogfileNameText() + "_"; 
         }
         logDir += dateFormat.format(new Date()) + ".csv";
         return logDir;

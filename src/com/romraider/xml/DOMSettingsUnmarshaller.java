@@ -19,10 +19,12 @@
 
 package com.romraider.xml;
 
+import com.romraider.Settings;
 import static com.romraider.xml.DOMHelper.unmarshallAttribute;
 import static java.awt.Font.BOLD;
+import org.w3c.dom.Node;
 import static org.w3c.dom.Node.ELEMENT_NODE;
-
+import org.w3c.dom.NodeList;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -30,11 +32,6 @@ import java.awt.Point;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import com.romraider.Settings;
 
 public final class DOMSettingsUnmarshaller {
 
@@ -226,13 +223,17 @@ public final class DOMSettingsUnmarshaller {
                 settings.setDestinationId((byte) unmarshallAttribute(n, "ecuid", (byte) 0x10));
                 settings.setFastPoll(unmarshallAttribute(n, "fastpoll", true));
 
+            } else if (n.getNodeType() == ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("j2534")) {
+                Settings.setJ2534Protocol(unmarshallAttribute(n, "protocol", "ISO9141"));
+                Settings.setJ2534Device(unmarshallAttribute(n, "library", null));
+
             } else if (n.getNodeType() == ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("maximized")) {
                 settings.setLoggerWindowMaximized(unmarshallAttribute(n, "value", false));
 
             } else if (n.getNodeType() == ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("size")) {
                 settings.setLoggerWindowSize(new Dimension(unmarshallAttribute(n, "y", 600),
                         unmarshallAttribute(n, "x", 1000)));
-                settings.setLoggerDividerLocation(unmarshallAttribute(n, "divider", 500));
+                settings.setLoggerDividerLocation((double) unmarshallAttribute(n, "divider", 500));
 
             } else if (n.getNodeType() == ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("location")) {
                 settings.setLoggerWindowLocation(new Point(unmarshallAttribute(n, "x", 150),
@@ -243,7 +244,7 @@ public final class DOMSettingsUnmarshaller {
                 settings.setLoggerParameterListState(unmarshallAttribute(n, "showlist", true));
 
             } else if (n.getNodeType() == ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("definition")) {
-                settings.setLoggerDefinitionFilePath(unmarshallAttribute(n, "path", settings.getLoggerDefinitionFilePath()));
+                settings.setLoggerDefinitionFilePath(unmarshallAttribute(n, "path", Settings.getLoggerDefinitionFilePath()));
 
             } else if (n.getNodeType() == ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("profile")) {
                 settings.setLoggerProfileFilePath(unmarshallAttribute(n, "path", ""));

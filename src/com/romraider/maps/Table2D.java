@@ -19,9 +19,12 @@
 
 package com.romraider.maps;
 
+import com.romraider.Settings;
+import com.romraider.swing.TableFrame;
+import com.romraider.util.AxisRange;
 import static com.romraider.util.ParamChecker.isNullOrEmpty;
 import static com.romraider.util.TableAxisUtil.getLiveDataRangeForAxis;
-
+import javax.swing.JLabel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -33,14 +36,9 @@ import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
-import javax.swing.JLabel;
-
-import com.romraider.Settings;
-import com.romraider.swing.TableFrame;
-import com.romraider.util.AxisRange;
-
 public class Table2D extends Table {
     private static final long serialVersionUID = -7684570967109324784L;
+    private static final String NEW_LINE = System.getProperty("line.separator");
     private Table1D axis = new Table1D(new Settings());
 
     public Table2D(Settings settings) {
@@ -56,25 +54,21 @@ public class Table2D extends Table {
         this.axis = axis;
     }
 
-    @Override
     public String toString() {
         return super.toString() + " (2D)";// + axis;
     }
 
-    @Override
     public void colorize() {
         super.colorize();
         axis.colorize();
     }
 
-    @Override
     public void setFrame(TableFrame frame) {
         this.frame = frame;
         axis.setFrame(frame);
         frame.setSize(getFrameSize());
     }
 
-    @Override
     public Dimension getFrameSize() {
         int height = verticalOverhead + cellHeight * 2;
         int width = horizontalOverhead + data.length * cellWidth;
@@ -88,14 +82,12 @@ public class Table2D extends Table {
         return new Dimension(width, height);
     }
 
-    @Override
     public void applyColorSettings(Settings settings) {
         this.setAxisColor(settings.getAxisColor());
         axis.applyColorSettings(settings);
         super.applyColorSettings(settings);
     }
 
-    @Override
     public void populateTable(byte[] input) throws ArrayIndexOutOfBoundsException {
         centerLayout.setRows(2);
         centerLayout.setColumns(this.getDataSize());
@@ -135,19 +127,16 @@ public class Table2D extends Table {
         //this.colorize();
     }
 
-    @Override
     public void increment(double increment) {
         super.increment(increment);
         axis.increment(increment);
     }
 
-    @Override
     public void multiply(double factor) {
         super.multiply(factor);
         axis.multiply(factor);
     }
 
-    @Override
     public void clearSelection() {
         axis.clearSelection(true);
         for (DataCell aData : data) {
@@ -155,38 +144,32 @@ public class Table2D extends Table {
         }
     }
 
-    @Override
     public void setRevertPoint() {
         super.setRevertPoint();
         axis.setRevertPoint();
     }
 
-    @Override
     public void undoAll() {
         super.undoAll();
         axis.undoAll();
     }
 
-    @Override
     public void undoSelected() {
         super.undoSelected();
         axis.undoSelected();
     }
 
-    @Override
     public byte[] saveFile(byte[] binData) {
         binData = super.saveFile(binData);
         binData = axis.saveFile(binData);
         return binData;
     }
 
-    @Override
     public void setRealValue(String realValue) {
         axis.setRealValue(realValue);
         super.setRealValue(realValue);
     }
 
-    @Override
     public void addKeyListener(KeyListener listener) {
         super.addKeyListener(listener);
         axis.addKeyListener(listener);
@@ -196,19 +179,16 @@ public class Table2D extends Table {
         selectCellAt(y);
     }
 
-    @Override
     public void cursorUp() {
         if (!axis.isStatic() && data[highlightY].isSelected()) {
             axis.selectCellAt(highlightY);
         }
     }
 
-    @Override
     public void cursorDown() {
         axis.cursorDown();
     }
 
-    @Override
     public void cursorLeft() {
         if (highlightY > 0 && data[highlightY].isSelected()) {
             selectCellAt(highlightY - 1);
@@ -217,7 +197,6 @@ public class Table2D extends Table {
         }
     }
 
-    @Override
     public void cursorRight() {
         if (highlightY < data.length - 1 && data[highlightY].isSelected()) {
             selectCellAt(highlightY + 1);
@@ -226,19 +205,16 @@ public class Table2D extends Table {
         }
     }
 
-    @Override
     public void startHighlight(int x, int y) {
         axis.clearSelection();
         super.startHighlight(x, y);
     }
 
-    @Override
     public void copySelection() {
         super.copySelection();
         axis.copySelection();
     }
 
-    @Override
     public void copyTable() {
         String tableHeader = settings.getTable2DHeader();
 
@@ -250,7 +226,6 @@ public class Table2D extends Table {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(output.toString()), null);
     }
 
-    @Override
     public void paste() {
         StringTokenizer st = new StringTokenizer("");
         String input = "";
@@ -286,7 +261,6 @@ public class Table2D extends Table {
         colorize();
     }
 
-    @Override
     public void pasteCompare() {
         StringTokenizer st = new StringTokenizer("");
         String input = "";
@@ -315,34 +289,28 @@ public class Table2D extends Table {
         }
     }
 
-    @Override
     public void setAxisColor(Color axisColor) {
         axis.setAxisColor(axisColor);
     }
 
-    @Override
     public void validateScaling() {
         super.validateScaling();
         axis.validateScaling();
     }
 
-    @Override
     public void setScaleIndex(int scaleIndex) {
         super.setScaleIndex(scaleIndex);
         axis.setScaleByName(getScale().getName());
     }
 
-    @Override
     public boolean isLiveDataSupported() {
         return !isNullOrEmpty(axis.getLogParam());
     }
 
-    @Override
     public boolean isButtonSelected() {
         return true;
     }
 
-    @Override
     protected void highlightLiveData() {
         if (overlayLog && frame.isVisible()) {
             AxisRange range = getLiveDataRangeForAxis(axis);
@@ -370,7 +338,6 @@ public class Table2D extends Table {
         }
     }
 
-    @Override
     public void clearLiveDataTrace() {
         for (DataCell cell : data) {
             cell.setLiveDataTrace(false);

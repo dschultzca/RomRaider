@@ -19,18 +19,16 @@
 
 package com.romraider.xml;
 
+import com.romraider.Settings;
+import com.romraider.swing.JProgressPane;
+import com.sun.org.apache.xml.internal.serialize.OutputFormat;
+import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
+import javax.imageio.metadata.IIOMetadataNode;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Vector;
-
-import javax.imageio.metadata.IIOMetadataNode;
-
-import com.romraider.Settings;
-import com.romraider.swing.JProgressPane;
-import com.sun.org.apache.xml.internal.serialize.OutputFormat;
-import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
 public final class DOMSettingsBuilder {
 
@@ -249,6 +247,12 @@ public final class DOMSettingsBuilder {
         serial.setAttribute("fastpoll", String.valueOf(settings.isFastPoll()));
         loggerSettings.appendChild(serial);
 
+        // J2534 connection
+        IIOMetadataNode j2534 = new IIOMetadataNode("j2534");
+        j2534.setAttribute("protocol", Settings.getJ2534Protocol());
+        j2534.setAttribute("library", Settings.getJ2534Device());
+        loggerSettings.appendChild(j2534);
+
         // window maximized
         IIOMetadataNode maximized = new IIOMetadataNode("maximized");
         maximized.setAttribute("value", String.valueOf((settings.isLoggerWindowMaximized())));
@@ -275,12 +279,12 @@ public final class DOMSettingsBuilder {
 
         // definition path
         IIOMetadataNode definition = new IIOMetadataNode("definition");
-        definition.setAttribute("path", settings.getLoggerDefinitionFilePath());
+        definition.setAttribute("path", Settings.getLoggerDefinitionFilePath());
         loggerSettings.appendChild(definition);
 
         // profile path
         IIOMetadataNode profile = new IIOMetadataNode("profile");
-        profile.setAttribute("path", settings.getLoggerProfileFilePath());
+        profile.setAttribute("path", Settings.getLoggerProfileFilePath());
         loggerSettings.appendChild(profile);
 
         // file logging

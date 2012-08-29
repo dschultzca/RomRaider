@@ -54,6 +54,7 @@ public final class MrfRunner implements Stoppable {
                     if (dataItem != null) dataItem.setData(parseDouble(values[i]));
                 }
             }
+            connection.close();
         } catch (Throwable t) {
             LOGGER.error("Error occurred", t);
         } finally {
@@ -63,7 +64,6 @@ public final class MrfRunner implements Stoppable {
 
     public void stop() {
         stop = true;
-        connection.close();
     }
 
     private double parseDouble(String value) {

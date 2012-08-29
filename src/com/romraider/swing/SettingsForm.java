@@ -19,9 +19,14 @@
 
 package com.romraider.swing;
 
+import ZoeloeSoft.projects.JFontChooser.JFontChooser;
+import com.romraider.Settings;
 import static com.romraider.Version.PRODUCT_NAME;
+import com.romraider.editor.ecu.ECUEditor;
+import com.romraider.util.FileAssociator;
 import static java.io.File.separator;
-
+import javax.swing.JColorChooser;
+import javax.swing.JFrame;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
@@ -32,16 +37,8 @@ import java.util.StringTokenizer;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JColorChooser;
-import javax.swing.JFrame;
 import javax.swing.JRadioButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
-
-import ZoeloeSoft.projects.JFontChooser.JFontChooser;
-
-import com.romraider.Settings;
-import com.romraider.editor.ecu.ECUEditor;
-import com.romraider.util.FileAssociator;
 
 public class SettingsForm extends JFrame implements MouseListener {
 
@@ -704,19 +701,15 @@ public class SettingsForm extends JFrame implements MouseListener {
         parent.getSettingsManager().save(settings);
     }
 
-    @Override
     public void mousePressed(MouseEvent e) {
     }
 
-    @Override
     public void mouseReleased(MouseEvent e) {
     }
 
-    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
-    @Override
     public void mouseExited(MouseEvent e) {
     }
 

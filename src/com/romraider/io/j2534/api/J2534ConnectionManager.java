@@ -36,92 +36,97 @@ import com.romraider.logger.ecu.comms.manager.PollingState;
 
 public final class J2534ConnectionManager implements ConnectionManager {
     private static final Logger LOGGER = getLogger(J2534ConnectionManager.class);
-    private J2534 api = new J2534Impl(Protocol.ISO9141);
+    private J2534 api = null;
     private int channelId;
     private int deviceId;
     private int msgId;
     private byte[] lastResponse;
+    private long timeout;
 
-    public J2534ConnectionManager(ConnectionProperties connectionProperties) {
+    public J2534ConnectionManager(ConnectionProperties connectionProperties, String library) {
         checkNotNull(connectionProperties, "connectionProperties");
-        initJ2534(connectionProperties.getBaudRate());
+        timeout = (long)connectionProperties.getConnectTimeout();
+        initJ2534(connectionProperties.getBaudRate(), library);
         LOGGER.info("J2534 connection initialised");
     }
 
     // Send request and wait for response with known length
-    public void send(byte[] request, byte[] response, long timeout, PollingState pollState) {
+    public void send(byte[] request, byte[] response, PollingState pollState) {
         checkNotNull(request, "request");
         checkNotNull(response, "response");
         checkNotNull(pollState, "pollState");
 
         if (pollState.getCurrentState() == 0 && pollState.getLastState() == 1) {
-        	clearLine();
+            clearLine();
         }
 
         if (pollState.getCurrentState() == 0) {
-	        // FIX - should timeout be connectionProperties.getReadTimeout() ??
-	        api.writeMsg(channelId, request, timeout);
+            api.writeMsg(channelId, request, timeout);
         }
         api.readMsg(channelId, response, timeout);
 
         if (pollState.getCurrentState() == 1){
-	        if (    response[0] == (byte) 0x80
-	        	&&  response[1] == (byte) 0xF0
-	        	&& (response[2] == (byte) 0x10 || response[2] == (byte) 0x18)
-	        	&&  response[3] == (response.length - 5)
-	        	&&  response[response.length - 1] == calculateChecksum(response)) {
-	
-	        	lastResponse = new byte[response.length];
-	        	arraycopy(response, 0, lastResponse, 0, response.length);
-	        }
-	        else{
+            if (    response[0] == (byte) 0x80
+                &&  response[1] == (byte) 0xF0
+                && (response[2] == (byte) 0x10 || response[2] == (byte) 0x18)
+                &&  response[3] == (response.length - 5)
+                &&  response[response.length - 1] == calculateChecksum(response)) {
+    
+                lastResponse = new byte[response.length];
+                arraycopy(response, 0, lastResponse, 0, response.length);
+            }
+            else{
                 LOGGER.error("J2534 Bad Data response: " + asHex(response));
-	        	arraycopy(lastResponse, 0, response, 0, response.length);
-	        	pollState.setNewQuery(true);
-	        }
+                arraycopy(lastResponse, 0, response, 0, response.length);
+                pollState.setNewQuery(true);
+            }
         }
     }
 
     // Send request and wait specified time for response with unknown length
-    public byte[] send(byte[] request, long maxWait) {
+    public byte[] send(byte[] request) {
         checkNotNull(request, "request");
-        // FIX - should maxWait be connectionProperties.getReadTimeout() ??
-        api.writeMsg(channelId, request, maxWait);
-        return api.readMsg(channelId, maxWait);
+        api.writeMsg(channelId, request, timeout);
+        return api.readMsg(channelId, timeout);
     }
 
-	public void clearLine() {
-    	LOGGER.debug("J2534 sending line break");
-    	api.writeMsg(channelId, new byte[] {0,0,0,0,0,0,0,0,0,0}, 100L);
-    	boolean empty = false;
+    public void clearLine() {
+        LOGGER.debug("J2534 sending line break");
+        api.writeMsg(channelId, new byte[] {0,0,0,0,0,0,0,0,0,0}, 100L);
+        boolean empty = false;
         do {
             byte[] badBytes = api.readMsg(channelId, 100L);
             if (badBytes.length > 0) {
-            	LOGGER.debug("J2534 clearing line (stale data): " + asHex(badBytes));
-            	empty = false;
+                LOGGER.debug("J2534 clearing line (stale data): " + asHex(badBytes));
+                empty = false;
             }
             else {
-            	empty = true;
+                empty = true;
             }
         } while (!empty ); 
-	}
+    }
 
-	public void close() {
+    public void close() {
         stopMsgFilter();
         disconnectChannel();
         closeDevice();
-        resetHandles();
-        LOGGER.info("J2534 connection closed");
     }
 
-    private void initJ2534(int baudRate) {
+    private void initJ2534(int baudRate, String library) {
+        api = new J2534Impl(Protocol.ISO9141, library);
         deviceId = api.open();
         try {
             version(deviceId);
             channelId = api.connect(deviceId, Flag.ISO9141_NO_CHECKSUM.getValue(), baudRate);
             setConfig(channelId);
             msgId = api.startPassMsgFilter(channelId, (byte) 0x00, (byte) 0x00);
+            LOGGER.debug(String.format(
+                    "J2534 success: deviceId:%d, channelId:%d, msgId:%d",
+                    deviceId, channelId, msgId));
         } catch (Exception e) {
+            LOGGER.debug(String.format(
+                    "J2534 exception: deviceId:%d, channelId:%d, msgId:%d",
+                    deviceId, channelId, msgId));
             close();
             throw new J2534Exception("J2534 Error opening device: " + e.getMessage(), e);
         }
@@ -143,7 +148,8 @@ public final class J2534ConnectionManager implements ConnectionManager {
 
     private void stopMsgFilter() {
         try {
-            if (channelId > 0 && msgId > 0) api.stopMsgFilter(channelId, msgId);
+            api.stopMsgFilter(channelId, msgId);
+            LOGGER.debug("J2534 stopped message filter:" + msgId);
         } catch (Exception e) {
             LOGGER.warn("J2534 Error stopping msg filter: " + e.getMessage());
         }
@@ -151,7 +157,8 @@ public final class J2534ConnectionManager implements ConnectionManager {
 
     private void disconnectChannel() {
         try {
-            if (channelId > 0) api.disconnect(channelId);
+            api.disconnect(channelId);
+            LOGGER.debug("J2534 disconnected channel:" + channelId);
         } catch (Exception e) {
             LOGGER.warn("J2534 Error disconnecting channel: " + e.getMessage());
         }
@@ -159,15 +166,10 @@ public final class J2534ConnectionManager implements ConnectionManager {
 
     private void closeDevice() {
         try {
-            if (deviceId > 0) api.close(deviceId);
+            api.close(deviceId);
+            LOGGER.info("J2534 closed connection to device:" + deviceId);
         } catch (Exception e) {
             LOGGER.warn("J2534 Error closing device: " + e.getMessage());
         }
-    }
-
-    private void resetHandles() {
-        channelId = 0;
-        deviceId = 0;
-        msgId = 0;
     }
 }

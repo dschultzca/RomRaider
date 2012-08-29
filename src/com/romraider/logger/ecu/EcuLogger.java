@@ -184,7 +184,7 @@ TODO: Keyboard accessibility (enable/disable parameters, select tabs, etc)
 TODO: Rewrite user profile application and saving to allow tab specific settings (eg. warn levels on dash tab)
 TODO: Add custom graph tab (eg. engine speed vs. boost, etc.)
 TODO: Add log analysis tab (or maybe new window?), including log playback, custom graphs, map compare, etc
- */
+*/
 
 public final class EcuLogger extends AbstractFrame implements MessageListener {
     private static final long serialVersionUID = 7145423251696282784L;
@@ -200,16 +200,17 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
     private static final String ECU_TEXT = "Engine Control Unit Polling";
     private static final String TCU_TEXT = "Transmission Control Unit Polling";
     private static final String[] LOG_FILE_TEXT = {"1st PT","2nd PT","3rd PT", // PT = Part Throttle
-        "4th PT","5th PT","6th PT",
-        "1st WOT","2nd WOT","3rd WOT",
-        "4th WOT","5th WOT","6th WOT",
-    "cruising"};
+                                                 "4th PT","5th PT","6th PT",
+                                                  "1st WOT","2nd WOT","3rd WOT",
+                                                 "4th WOT","5th WOT","6th WOT",
+                                                 "cruising"};
     private static final String TOGGLE_LIST_TT_TEXT = "Hides the parameter list and saves the state on exit (F11)";
     private static final String UNSELECT_ALL_TT_TEXT = "Un-select all selected parameters/switches on all tabs! (F9)";
     private static final byte ECU_ID = (byte) 0x10;
     private static final byte TCU_ID = (byte) 0x18;
     private static String target = "ECU";
     private static String loadResult  = "";
+    private String defVersion;
     private ECUEditor ecuEditor;
     private Settings settings;
     private LoggerController controller;
@@ -279,7 +280,7 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
     private void construct(Settings settings) {
         checkNotNull(settings);
         this.settings = settings;
-        Logger.getRootLogger().setLevel(Level.toLevel(settings.getLoggerDebuggingLevel()));
+        Logger.getRootLogger().setLevel((Level) Level.toLevel(settings.getLoggerDebuggingLevel()));
         if (ecuEditor == null) {
             JProgressBar progressBar = startbar();
             bootstrap();
@@ -324,14 +325,12 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
 
     private void bootstrap() {
         EcuInitCallback ecuInitCallback = new EcuInitCallback() {
-            @Override
             public void callback(EcuInit newEcuInit) {
                 final String ecuId = newEcuInit.getEcuId();
                 LOGGER.info(target + " ID = " + ecuId);
                 if (ecuInit == null || !ecuInit.getEcuId().equals(ecuId)) {
                     ecuInit = newEcuInit;
                     invokeLater(new Runnable() {
-                        @Override
                         public void run() {
                             String calId = getCalId(ecuId);
                             String carString = getCarString(ecuId);
@@ -340,7 +339,7 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
                             ecuIdLabel.setText(buildEcuInfoLabelText(target + " ID", ecuId));
                             loadResult = String.format("Loading logger config for new %s ID: %s, ", target, ecuId);
                             loadLoggerParams();
-                            loadUserProfile(settings.getLoggerProfileFilePath());
+                            loadUserProfile(Settings.getLoggerProfileFilePath());
                         }
 
                         private String getCalId(String ecuId) {
@@ -479,7 +478,7 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
     }
 
     private void loadLoggerConfig() {
-        String loggerConfigFilePath = settings.getLoggerDefinitionFilePath();
+        String loggerConfigFilePath = Settings.getLoggerDefinitionFilePath();
         if (isNullOrEmpty(loggerConfigFilePath)) showMissingConfigDialog();
         else {
             try {
@@ -492,7 +491,18 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
                 loadEcuSwitches(dataLoader.getEcuSwitches());
                 if (target.equals("ECU")) initFileLoggingController(dataLoader.getFileLoggingControllerSwitch());
                 settings.setLoggerConnectionProperties(dataLoader.getConnectionProperties());
-                loadResult = String.format("%sloaded %d parameters, %d switches.",loadResult, ecuParams.size(), dataLoader.getEcuSwitches().size());
+                if (dataLoader.getDefVersion() == null) {
+                    defVersion = "na";
+                }
+                else {
+                    defVersion = dataLoader.getDefVersion();
+                }
+                loadResult = String.format(
+                        "%sloaded %d parameters, %d switches from def version %s.",
+                        loadResult,
+                        ecuParams.size(),
+                        dataLoader.getEcuSwitches().size(),
+                        defVersion);
                 LOGGER.info(loadResult);
             } catch (ConfigurationException cfe) {
                 reportError(cfe);
@@ -556,7 +566,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         controller.setFileLoggerSwitchMonitor(new FileLoggerControllerSwitchMonitorImpl(fileLoggingControllerSwitch, new FileLoggerControllerSwitchHandler() {
             boolean oldDefogStatus = false;
 
-            @Override
             public void handleSwitch(double switchValue) {
                 boolean logToFile = (int) switchValue == 1;
                 if (settings.isFileLoggingControllerSwitchActive() && logToFile != oldDefogStatus) {
@@ -799,7 +808,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         button.getActionMap().put("toggleGaugeStyle", new AbstractAction() {
             private static final long serialVersionUID = 6913964758354638587L;
 
-            @Override
             public void actionPerformed(ActionEvent e) {
                 button.doClick();
             }
@@ -807,7 +815,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         button.addActionListener(new AbstractAction() {
             private static final long serialVersionUID = 123232894767995264L;
 
-            @Override
             public void actionPerformed(ActionEvent e) {
                 dashboardUpdateHandler.toggleGaugeStyle();
             }
@@ -838,7 +845,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         button.getActionMap().put("un-selectAll", new AbstractAction() {
             private static final long serialVersionUID = 4913964758354638588L;
 
-            @Override
             public void actionPerformed(ActionEvent e) {
                 button.doClick();
             }
@@ -846,7 +852,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         button.addActionListener(new AbstractAction() {
             private static final long serialVersionUID = 723232894767995265L;
 
-            @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     clearAllSelectedParameters(dataTabParamListTableModel);
@@ -881,7 +886,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         toggleListButton.getActionMap().put("toggleHideParams", new AbstractAction() {
             private static final long serialVersionUID = -276854997788647306L;
 
-            @Override
             public void actionPerformed(ActionEvent e) {
                 toggleListButton.doClick();
             }
@@ -891,7 +895,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
             private final int min = 1;
             public int size = splitPane.getDividerLocation();
 
-            @Override
             public void actionPerformed(ActionEvent e) {
                 int current = splitPane.getDividerLocation();
                 if (toggleListButton.isSelected()) {
@@ -905,6 +908,10 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
                 }
             }
         });
+
+        if (!settings.getLoggerParameterListState()) {
+            toggleListButton.doClick();
+        }
 
         JPanel tabControlPanel = new JPanel(new BetterFlowLayout(FlowLayout.CENTER, 1, 1));
         tabControlPanel.setPreferredSize(new Dimension(25, 25));
@@ -1009,7 +1016,7 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         JPanel controlPanel = new JPanel(new BorderLayout());
         controlPanel.add(buildPortsComboBox(), WEST);
         //TODO: Finish log playback stuff...
-        //        controlPanel.add(buildPlaybackControls(), CENTER);
+//        controlPanel.add(buildPlaybackControls(), CENTER);
         controlPanel.add(buildStatusIndicator(), EAST);
         return controlPanel;
     }
@@ -1017,10 +1024,8 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
     private Component buildPlaybackControls() {
         JButton playButton = new JButton("Play");
         playButton.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 ThreadUtil.runAsDaemon(new Runnable() {
-                    @Override
                     public void run() {
                         PlaybackManagerImpl playbackManager = new PlaybackManagerImpl(ecuParams, liveDataUpdateHandler, graphUpdateHandler, dashboardUpdateHandler, mafUpdateHandler, dynoUpdateHandler,
                                 TableUpdateHandler.getInstance());
@@ -1040,47 +1045,42 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         final JTextField fileNameExtention = new JTextField("",8);
         fileNameExtention.setToolTipText(FILE_NAME_EXTENTION);
         fileNameExtention.addFocusListener(new FocusListener() {
-            @Override
             public void focusGained(FocusEvent arg0) {
             }
 
-            @Override
             public void focusLost(FocusEvent arg0) {
                 settings.setLogfileNameText(fileNameExtention.getText());
             }
-        });
-
+          });
+        
         JPopupMenu fileNamePopup = new JPopupMenu();
         JMenuItem ecuIdItem = new JMenuItem("Use Current " + target + " ID");
         ecuIdItem.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 fileNameExtention.setText(ecuInit.getEcuId());
                 settings.setLogfileNameText(fileNameExtention.getText());
             }
-        });
+          });
         fileNamePopup.add(ecuIdItem);
         for (final String item : LOG_FILE_TEXT) {
             ecuIdItem = new JMenuItem(item);
             if (item.endsWith("PT"))  ecuIdItem.setToolTipText("Part Throttle");
             if (item.endsWith("WOT")) ecuIdItem.setToolTipText("Wide Open Throttle");
             ecuIdItem.addActionListener(new ActionListener() {
-                @Override
                 public void actionPerformed(ActionEvent e) {
                     fileNameExtention.setText(item.replaceAll(" ", "_"));
                     settings.setLogfileNameText(fileNameExtention.getText());
                 }
-            });
+              });
             fileNamePopup.add(ecuIdItem);
         }
         ecuIdItem = new JMenuItem("Clear Logfile Text");
         ecuIdItem.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 fileNameExtention.setText("");
                 settings.setLogfileNameText(fileNameExtention.getText());
             }
-        });
+          });
         fileNamePopup.add(ecuIdItem);
         fileNameExtention.addMouseListener(new LogFileNameFieldAction(fileNamePopup));
 
@@ -1097,7 +1097,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         logToFileButton.setBackground(GREEN);
         logToFileButton.setOpaque(true);
         logToFileButton.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 if (logToFileButton.isSelected() && controller.isStarted()) {
                     fileUpdateHandler.start();
@@ -1117,7 +1116,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
 
     private JPanel buildPortsComboBox() {
         portsComboBox.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 settings.setLoggerPort((String) portsComboBox.getSelectedItem());
                 // this is a hack...
@@ -1135,7 +1133,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         ecuCheckBox.setToolTipText(ECU_TEXT);
         tcuCheckBox.setToolTipText(TCU_TEXT);
         ecuCheckBox.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 stopLogging();
                 tcuCheckBox.setSelected(false);
@@ -1144,7 +1141,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
             }
         });
         tcuCheckBox.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 stopLogging();
                 ecuCheckBox.setSelected(false);
@@ -1170,7 +1166,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         reconnectButton.setPreferredSize(new Dimension(25, 25));
         reconnectButton.setToolTipText("Reconnect to " + target);
         reconnectButton.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 try {
                     restartLogging();
@@ -1184,7 +1179,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         disconnectButton.setPreferredSize(new Dimension(25, 25));
         disconnectButton.setToolTipText("Disconnect from " + target);
         disconnectButton.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 try {
                     stopLogging();
@@ -1215,6 +1209,10 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         return target;
     }
 
+    public String getDefVersion() {
+        return defVersion;
+    }
+
     public void restartLogging() {
         stopLogging();
         startLogging();
@@ -1231,7 +1229,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         JPanel panel = new JPanel(new BorderLayout());
         JButton resetButton = new JButton("Reset Data");
         resetButton.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 liveDataUpdateHandler.reset();
             }
@@ -1247,7 +1244,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         JPanel panel = new JPanel(new BorderLayout());
         JButton resetButton = new JButton("Reset Data");
         resetButton.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 graphUpdateHandler.reset();
             }
@@ -1263,7 +1259,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         JPanel panel = new JPanel(new BorderLayout());
         JButton resetButton = new JButton("Reset Data");
         resetButton.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 dashboardUpdateHandler.reset();
             }
@@ -1277,39 +1272,32 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
 
     private void selectTab(int tabIndex) {
         int count = tabbedPane.getComponentCount();
-        if (tabIndex >= 0 && tabIndex < count) tabbedPane.setSelectedIndex(tabIndex);
+        if (tabIndex >= 0 && tabIndex < count)
+            tabbedPane.setSelectedIndex(tabIndex);
     }
 
-    @Override
     public void windowOpened(WindowEvent windowEvent) {
     }
 
-    @Override
     public void windowClosing(WindowEvent windowEvent) {
         handleExit();
     }
 
-    @Override
     public void windowClosed(WindowEvent windowEvent) {
     }
 
-    @Override
     public void windowIconified(WindowEvent windowEvent) {
     }
 
-    @Override
     public void windowDeiconified(WindowEvent windowEvent) {
     }
 
-    @Override
     public void windowActivated(WindowEvent windowEvent) {
     }
 
-    @Override
     public void windowDeactivated(WindowEvent windowEvent) {
     }
 
-    @Override
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
     }
 
@@ -1365,7 +1353,11 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         settings.setLoggerWindowMaximized(getExtendedState() == MAXIMIZED_BOTH);
         settings.setLoggerWindowSize(getSize());
         settings.setLoggerWindowLocation(getLocation());
-        if (settings.getLoggerParameterListState()) settings.setLoggerDividerLocation(splitPane.getDividerLocation());
+        if (settings.getLoggerParameterListState()) {
+            final Component c = tabbedPane.getSelectedComponent();
+            final JSplitPane sp = (JSplitPane) c.getComponentAt(100, 100);
+            settings.setLoggerDividerLocation(sp.getDividerLocation());
+        }
         settings.setLoggerSelectedTabIndex(tabbedPane.getSelectedIndex());
         settings.setLoggerPluginPorts(getPluginPorts(externalDataSources));
         try {
@@ -1396,11 +1388,9 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         return settings;
     }
 
-    @Override
     public void reportMessage(final String message) {
         if (message != null) {
             invokeLater(new Runnable() {
-                @Override
                 public void run() {
                     messageLabel.setText(message);
                     messageLabel.setForeground(BLACK);
@@ -1409,16 +1399,13 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         }
     }
 
-    @Override
     public void reportMessageInTitleBar(String message) {
         if (!isNullOrEmpty(message)) setTitle(message);
     }
 
-    @Override
     public void reportStats(final String message) {
         if (!isNullOrEmpty(message)) {
             invokeLater(new Runnable() {
-                @Override
                 public void run() {
                     statsLabel.setText(message);
                 }
@@ -1433,11 +1420,9 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         return label;
     }
 
-    @Override
     public void reportError(final String error) {
         if (!isNullOrEmpty(error)) {
             invokeLater(new Runnable() {
-                @Override
                 public void run() {
                     messageLabel.setText("Error: " + error);
                     messageLabel.setForeground(RED);
@@ -1446,7 +1431,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         }
     }
 
-    @Override
     public void reportError(Exception e) {
         if (e != null) {
             LOGGER.error("Error occurred", e);
@@ -1456,13 +1440,11 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
         }
     }
 
-    @Override
     public void reportError(String error, Exception e) {
         if (e != null) LOGGER.error(error, e);
         reportError(error);
     }
 
-    @Override
     public void setTitle(String title) {
         if (title != null) {
             if (!title.startsWith(ECU_LOGGER_TITLE)) {
@@ -1474,14 +1456,15 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
 
     public void setRefreshMode(boolean refreshMode) {
         settings.setRefreshMode(refreshMode);
-        refresher.setRefreshMode(refreshMode);
+           refresher.setRefreshMode(refreshMode);
     }
 
     private JProgressBar startbar() {
         startStatus = new JWindow();
         startStatus.setAlwaysOnTop(true);
-        startStatus.setLocation((int)(settings.getLoggerWindowSize().getWidth()/2 + settings.getLoggerWindowLocation().getX()),
-                (int)(settings.getLoggerWindowSize().getHeight()/2 + settings.getLoggerWindowLocation().getY()));
+        startStatus.setLocation(
+                (int)(settings.getLoggerWindowSize().getWidth()/2 + settings.getLoggerWindowLocation().getX() - 150),
+                (int)(settings.getLoggerWindowSize().getHeight()/2 + settings.getLoggerWindowLocation().getY() - 36));
         JProgressBar progressBar = new JProgressBar(0, 100);
         progressBar.setValue(0);
         progressBar.setIndeterminate(false);
@@ -1521,7 +1504,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
 
     private static void createAndShowGui(final int defaultCloseOperation, final EcuLogger ecuLogger, final boolean fullscreen) {
         invokeLater(new Runnable() {
-            @Override
             public void run() {
                 doCreateAndShowGui(defaultCloseOperation, ecuLogger, fullscreen);
             }
@@ -1557,20 +1539,6 @@ public final class EcuLogger extends AbstractFrame implements MessageListener {
             if (settings.isLoggerWindowMaximized()) ecuLogger.setExtendedState(MAXIMIZED_BOTH);
             ecuLogger.setDefaultCloseOperation(defaultCloseOperation);
             ecuLogger.setVisible(true);
-        }
-        // simulate F11 key typed based on Parameter List show setting 'showlist' in settings.xml
-        // is this a hack as it may not work in X-server?
-        if (settings.getLoggerSelectedTabIndex() >= 0 && settings.getLoggerSelectedTabIndex() <= 2) {
-            if (!settings.getLoggerParameterListState()) { //false setting hides list
-                Robot r;
-                try {
-                    r = new Robot();
-                    r.keyPress(KeyEvent.VK_F11);
-                    r.keyRelease(KeyEvent.VK_F11);
-                } catch (AWTException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 }
