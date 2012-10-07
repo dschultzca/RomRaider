@@ -19,19 +19,14 @@
 
 package com.romraider.maps;
 
-import com.romraider.Settings;
-import com.romraider.logger.ecu.ui.swing.vertical.VerticalLabelUI;
-import com.romraider.swing.TableFrame;
-import com.romraider.util.AxisRange;
 import static com.romraider.util.ColorScaler.getScaledColor;
 import static com.romraider.util.ParamChecker.isNullOrEmpty;
 import static com.romraider.util.TableAxisUtil.getLiveDataRangeForAxis;
-import com.romraider.xml.RomAttributeParser;
 import static javax.swing.BorderFactory.createLineBorder;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
@@ -42,15 +37,27 @@ import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+
+import com.romraider.Settings;
+import com.romraider.logger.ecu.ui.swing.vertical.VerticalLabelUI;
+import com.romraider.swing.TableFrame;
+import com.romraider.util.AxisRange;
+import com.romraider.xml.RomAttributeParser;
+
 public class Table3D extends Table {
 
     private static final long serialVersionUID = 3103448753263606599L;
     private Table1D xAxis = new Table1D(new Settings());
     private Table1D yAxis = new Table1D(new Settings());
-    private DataCell[][] data = new DataCell[1][1];
+    DataCell[][] data = new DataCell[1][1];
     private boolean swapXY = false;
     private boolean flipX = false;
     private boolean flipY = false;
+    CopyTable3DWorker copyTable3DWorker;
 
     public Table3D(Settings settings) {
         super(settings);
@@ -116,6 +123,7 @@ public class Table3D extends Table {
         return data[0].length;
     }
 
+    @Override
     public void populateTable(byte[] input) throws NullPointerException, ArrayIndexOutOfBoundsException {
         // fill first empty cell
         centerPanel.add(new JLabel());
@@ -212,6 +220,7 @@ public class Table3D extends Table {
         add(new JLabel(getScale().getUnit(), JLabel.CENTER), BorderLayout.SOUTH);
     }
 
+    @Override
     public StringBuffer getTableAsString() {
         // Make a string of the table
         StringBuffer output = new StringBuffer(BLANK);
@@ -232,6 +241,7 @@ public class Table3D extends Table {
         return output;
     }
 
+    @Override
     public void colorize() {
         if (compareType == COMPARE_OFF) {
             if (!isStatic && !isAxis) {
@@ -349,6 +359,7 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public void compare(int compareType) {
         this.compareType = compareType;
 
@@ -365,6 +376,7 @@ public class Table3D extends Table {
         colorize();
     }
 
+    @Override
     public void setFrame(TableFrame frame) {
         this.frame = frame;
         xAxis.setFrame(frame);
@@ -373,6 +385,7 @@ public class Table3D extends Table {
         frame.pack();
     }
 
+    @Override
     public Dimension getFrameSize() {
         int height = verticalOverhead + cellHeight * data[0].length;
         int width = horizontalOverhead + data.length * cellWidth;
@@ -386,6 +399,7 @@ public class Table3D extends Table {
         return new Dimension(width, height);
     }
 
+    @Override
     public String toString() {
         return super.toString() + " (3D)";/* +
                 "\n   Flip X: " + flipX +
@@ -397,6 +411,7 @@ public class Table3D extends Table {
                 yAxis;*/
     }
 
+    @Override
     public void increment(double increment) {
         if (!isStatic && !locked) {
             for (int x = 0; x < this.getSizeX(); x++) {
@@ -412,6 +427,7 @@ public class Table3D extends Table {
         colorize();
     }
 
+    @Override
     public void multiply(double factor) {
         if (!isStatic && !locked) {
             for (int x = 0; x < this.getSizeX(); x++) {
@@ -427,6 +443,7 @@ public class Table3D extends Table {
         colorize();
     }
 
+    @Override
     public void clearSelection() {
         xAxis.clearSelection(true);
         yAxis.clearSelection(true);
@@ -437,6 +454,7 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public void highlight(int xCoord, int yCoord) {
         if (highlight) {
             for (int x = 0; x < this.getSizeX(); x++) {
@@ -454,6 +472,7 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public void stopHighlight() {
         highlight = false;
         // loop through, selected and un-highlight
@@ -467,6 +486,7 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public void setRevertPoint() {
         for (int x = 0; x < this.getSizeX(); x++) {
             for (int y = 0; y < this.getSizeY(); y++) {
@@ -478,6 +498,7 @@ public class Table3D extends Table {
         colorize();
     }
 
+    @Override
     public void undoAll() {
         clearLiveDataTrace();
         for (int x = 0; x < this.getSizeX(); x++) {
@@ -490,6 +511,7 @@ public class Table3D extends Table {
         colorize();
     }
 
+    @Override
     public void undoSelected() {
         clearLiveDataTrace();
         for (int x = 0; x < this.getSizeX(); x++) {
@@ -505,6 +527,7 @@ public class Table3D extends Table {
     }
 
 
+    @Override
     public byte[] saveFile(byte[] binData) {
         if (!isStatic  // save if table is not static
                 &&     // and user level is great enough
@@ -553,6 +576,7 @@ public class Table3D extends Table {
         return binData;
     }
 
+    @Override
     public void setRealValue(String realValue) {
         if (!isStatic && !locked) {
             for (int x = 0; x < this.getSizeX(); x++) {
@@ -568,6 +592,7 @@ public class Table3D extends Table {
         colorize();
     }
 
+    @Override
     public void addKeyListener(KeyListener listener) {
         xAxis.addKeyListener(listener);
         yAxis.addKeyListener(listener);
@@ -606,6 +631,7 @@ public class Table3D extends Table {
         highlightY = y;
     }
 
+    @Override
     public void cursorUp() {
         if (highlightY > 0 && data[highlightX][highlightY].isSelected()) {
             selectCellAt(highlightX, highlightY - 1);
@@ -617,6 +643,7 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public void cursorDown() {
         if (highlightY < getSizeY() - 1 && data[highlightX][highlightY].isSelected()) {
             selectCellAt(highlightX, highlightY + 1);
@@ -626,6 +653,7 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public void cursorLeft() {
         if (highlightX > 0 && data[highlightX][highlightY].isSelected()) {
             selectCellAt(highlightX - 1, highlightY);
@@ -637,6 +665,7 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public void cursorRight() {
         if (highlightX < getSizeX() - 1 && data[highlightX][highlightY].isSelected()) {
             selectCellAt(highlightX + 1, highlightY);
@@ -646,12 +675,14 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public void startHighlight(int x, int y) {
         xAxis.clearSelection();
         yAxis.clearSelection();
         super.startHighlight(x, y);
     }
 
+    @Override
     public void copySelection() {
         // find bounds of selection
         // coords[0] = x min, y min, x max, y max
@@ -709,29 +740,15 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public void copyTable() {
-        // create string
-        String tableHeader = settings.getTable3DHeader();
-
-        StringBuffer output = new StringBuffer(tableHeader);
-        output.append(xAxis.getTableAsString()).append(NEW_LINE);
-
-        for (int y = 0; y < getSizeY(); y++) {
-            output.append(yAxis.getCellAsString(y)).append(TAB);
-            for (int x = 0; x < getSizeX(); x++) {
-                output.append(data[x][y].getText());
-                if (x < getSizeX() - 1) {
-                    output.append(TAB);
-                }
-            }
-            if (y < getSizeY() - 1) {
-                output.append(NEW_LINE);
-            }
-        }
-        //copy to clipboard
-        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(String.valueOf(output)), null);
+        SwingUtilities.getWindowAncestor(this).setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        copyTable3DWorker = new CopyTable3DWorker(settings, this);
+        copyTable3DWorker.execute();
     }
 
+    @Override
     public void paste() {
         StringTokenizer st = new StringTokenizer("");
         String input = "";
@@ -778,6 +795,7 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public void pasteCompare() {
         StringTokenizer st = new StringTokenizer("");
         String input = "";
@@ -884,6 +902,7 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public void applyColorSettings(Settings settings) {
         // apply settings to cells
         this.settings = settings;
@@ -912,17 +931,20 @@ public class Table3D extends Table {
         colorize();
     }
 
+    @Override
     public void setAxisColor(Color axisColor) {
         xAxis.setAxisColor(axisColor);
         yAxis.setAxisColor(axisColor);
     }
 
+    @Override
     public void validateScaling() {
         super.validateScaling();
         xAxis.validateScaling();
         yAxis.validateScaling();
     }
 
+    @Override
     public void refreshValues() {
         if (!isStatic && !isAxis) {
             for (DataCell[] column : data) {
@@ -933,14 +955,17 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public boolean isLiveDataSupported() {
         return !isNullOrEmpty(xAxis.getLogParam()) && !isNullOrEmpty(yAxis.getLogParam());
     }
 
+    @Override
     public boolean isButtonSelected() {
         return true;
     }
 
+    @Override
     protected void highlightLiveData() {
         if (overlayLog && frame.isVisible()) {
             AxisRange rangeX = getLiveDataRangeForAxis(xAxis);
@@ -965,6 +990,7 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public void clearLiveDataTrace() {
         for (int x = 0; x < getSizeX(); x++) {
             for (int y = 0; y < getSizeY(); y++) {
@@ -974,6 +1000,7 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public void setScaleIndex(int scaleIndex) {
         super.setScaleIndex(scaleIndex);
         xAxis.setScaleByName(getScale().getName());
@@ -984,6 +1011,7 @@ public class Table3D extends Table {
         return data;
     }
 
+    @Override
     public double getMin() {
         if (getScale().getMin() == 0 && getScale().getMax() == 0) {
             double low = Double.MAX_VALUE;
@@ -1003,6 +1031,7 @@ public class Table3D extends Table {
         }
     }
 
+    @Override
     public double getMax() {
         if (getScale().getMin() == 0 && getScale().getMax() == 0) {
             double high = Double.MIN_VALUE;
@@ -1020,5 +1049,46 @@ public class Table3D extends Table {
         } else {
             return getScale().getMax();
         }
+    }
+}
+
+class CopyTable3DWorker extends SwingWorker<Void, Void> {
+    Settings settings;
+    Table3D table;
+
+    public CopyTable3DWorker(Settings settings, Table3D table)
+    {
+        this.settings = settings;
+        this.table = table;
+    }
+
+    @Override
+    protected Void doInBackground() throws Exception {
+        String tableHeader = settings.getTable3DHeader();
+
+        StringBuffer output = new StringBuffer(tableHeader);
+        output.append(table.getXAxis().getTableAsString()).append(Table3D.NEW_LINE);
+
+        for (int y = 0; y < table.getSizeY(); y++) {
+            output.append(table.getYAxis().getCellAsString(y)).append(Table3D.TAB);
+            for (int x = 0; x < table.getSizeX(); x++) {
+                output.append(table.data[x][y].getText());
+                if (x < table.getSizeX() - 1) {
+                    output.append(Table3D.TAB);
+                }
+            }
+            if (y < table.getSizeY() - 1) {
+                output.append(Table3D.NEW_LINE);
+            }
+        }
+        //copy to clipboard
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(String.valueOf(output)), null);
+        return null;
+    }
+
+    @Override
+    public void done() {
+        SwingUtilities.getWindowAncestor(table).setCursor(null);
+        table.setCursor(null);
     }
 }
