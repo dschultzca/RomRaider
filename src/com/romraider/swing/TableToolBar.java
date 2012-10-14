@@ -183,15 +183,16 @@ public class TableToolBar extends JToolBar implements MouseListener, ItemListene
 
         // key binding actions
         Action enterAction = new AbstractAction() {
-            /**
-             *
-             */
             private static final long serialVersionUID = -6008026264821746092L;
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                getTable().requestFocus();
-                setValue();
+                Table getTable = getTable();
+                if(null != getTable)
+                {
+                    getTable().requestFocus();
+                    setValue();
+                }
             }
         };
 
@@ -362,7 +363,11 @@ public class TableToolBar extends JToolBar implements MouseListener, ItemListene
     }
 
     public void multiply() {
-        table.multiply(Double.parseDouble(setValueText.getText()));
+        try{
+            table.multiply(Double.parseDouble(setValueText.getText()));
+        }catch(NumberFormatException nex) {
+            // Do Nothing.  setValueText is null or not a valid double.
+        }
     }
 
     public void incrementFine() {
