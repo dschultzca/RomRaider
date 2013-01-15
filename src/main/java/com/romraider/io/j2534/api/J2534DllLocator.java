@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.romraider.util.JREChecker;
 import com.romraider.util.ParamChecker;
 import com.sun.jna.Native;
 import com.sun.jna.platform.win32.Advapi32;
@@ -56,7 +57,13 @@ public class J2534DllLocator {
     public static Set<J2534Library> listLibraries(String protocol) throws Exception {
         Set<J2534Library> libraries = new HashSet<J2534Library>();
         HKEY hklm = HKEY_LOCAL_MACHINE;
-        String passThru = "SOFTWARE\\PassThruSupport.04.04";
+        String passThru;
+        if (JREChecker.is32bit()) {
+            passThru = "SOFTWARE\\PassThruSupport.04.04";
+        }
+        else {
+            passThru = "SOFTWARE\\Wow6432Node\\PassThruSupport.04.04";
+        }
         HKEYByReference passThruHandle = getHandle(hklm, passThru);
  
         List<String> vendors = getKeys(passThruHandle.getValue());

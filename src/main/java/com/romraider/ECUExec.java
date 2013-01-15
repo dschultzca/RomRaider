@@ -75,6 +75,17 @@ public class ECUExec {
                 "JRE Incompatibility Warning", 
                 WARNING_MESSAGE);
         }
+//        if (!JREChecker.is32bit() &&
+//	       containsLoggerArg(args)) {
+//            showMessageDialog(null, 
+//                "Incompatible JRE detected.\n" +
+//                PRODUCT_NAME +
+//                " ECU Logger requires a 32-bit JRE.\nLogger will now exit.", 
+//                "JRE Incompatibility Error", 
+//                ERROR_MESSAGE);
+//            WindowEvent e = new WindowEvent(this, WindowEvent.WINDOW_CLOSED);
+//            windowClosing(e);
+//        }
 
         // check for dodgy threading - dev only
 //        RepaintManager.setCurrentManager(new ThreadCheckingRepaintManager(true));
