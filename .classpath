@@ -4,10 +4,10 @@
 	<classpathentry kind="src" path="src/main/resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/common/com4j.jar"/>
-	<classpathentry kind="lib" path="lib/windows/j3dcore.jar"/>
-	<classpathentry kind="lib" path="lib/windows/j3dutils.jar"/>
-	<classpathentry kind="lib" path="lib/windows/vecmath.jar"/>
-	<classpathentry kind="lib" path="lib/windows/Graph3d.jar"/>
+	<classpathentry kind="lib" path="lib/windows/common/j3dcore.jar"/>
+	<classpathentry kind="lib" path="lib/windows/common/j3dutils.jar"/>
+	<classpathentry kind="lib" path="lib/windows/common/vecmath.jar"/>
+	<classpathentry kind="lib" path="lib/windows/common/Graph3d.jar"/>
 	<classpathentry kind="lib" path="lib/common/jama-1.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/common/BareBonesBrowserLaunch.jar"/>
 	<classpathentry kind="lib" path="lib/common/jep.jar"/>
@@ -28,7 +28,7 @@
 			<attribute name="javadoc_location" value="http://users.frii.com/jarvi/rxtx/doc/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/windows/jdic_stub.jar"/>
+	<classpathentry kind="lib" path="lib/windows/common/jdic_stub.jar"/>
 	<classpathentry kind="lib" path="lib/common/jdic.jar"/>
 	<classpathentry kind="lib" path="lib/common/jfreechart-1.0.9.jar"/>
 	<classpathentry kind="lib" path="lib/common/jcommon-1.0.12.jar"/>

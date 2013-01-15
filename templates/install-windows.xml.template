@@ -68,8 +68,9 @@
             <file src="plugins/txs_utec.plugin" targetdir="$INSTALL_PATH/plugins"/>
             <file src="plugins/zt2.plugin" targetdir="$INSTALL_PATH/plugins"/>
 
-            <fileset dir="lib/common" targetdir="$INSTALL_PATH/lib/common"/>
-            <fileset dir="lib/windows" targetdir="$INSTALL_PATH/lib/windows"/>
+            <fileset dir="lib/common" targetdir="$INSTALL_PATH/libs"/>
+            <fileset dir="lib/windows/common" targetdir="$INSTALL_PATH/libs"/>
+            <fileset dir="lib/windows/x86" targetdir="$INSTALL_PATH/libs"/>
 
             <updatecheck>
                 <include name="plugins/**"/>

@@ -1,4 +1,6 @@
 src/main/java/com/romraider/Version.java
 build/
+lib/common/com4j*.dll
+lib/windows/x86/phidget21.dll
 target/
 tmp/

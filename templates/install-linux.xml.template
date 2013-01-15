@@ -68,8 +68,9 @@
             <file src="plugins/txs_utec.plugin" targetdir="$INSTALL_PATH/plugins"/>
             <file src="plugins/zt2.plugin" targetdir="$INSTALL_PATH/plugins"/>
 
-            <fileset dir="lib/common" targetdir="$INSTALL_PATH/lib/common"/>
-            <fileset dir="lib/linux" targetdir="$INSTALL_PATH/lib/linux"/>
+            <fileset dir="lib/common" excludes="com4j*" targetdir="$INSTALL_PATH/libs"/>
+            <fileset dir="lib/linux/common" targetdir="$INSTALL_PATH/libs"/>
+            <fileset dir="lib/linux/x86" targetdir="$INSTALL_PATH/libs"/>
 
             <updatecheck>
                 <include name="plugins/**"/>

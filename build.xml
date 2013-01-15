@@ -132,6 +132,34 @@
             <fileset dir="lib/linux" includes="*.jar"/>
         </path>
 
+        <!-- windows amd64 source classpath -->
+        <path id="windows.classpath.amd64">
+            <fileset dir="lib/common" includes="*.jar"/>
+            <fileset dir="lib/windows/amd64" includes="*.jar"/>
+            <fileset dir="lib/windows/common" includes="*.jar"/>
+        </path>
+
+        <!-- linux amd64 source classpath -->
+        <path id="linux.classpath.amd64">
+            <fileset dir="lib/common" includes="*.jar"/>
+            <fileset dir="lib/linux/amd64" includes="*.jar"/>
+            <fileset dir="lib/linux/common" includes="*.jar"/>
+        </path>
+
+        <!-- windows x86 source classpath -->
+        <path id="windows.classpath.x86">
+            <fileset dir="lib/common" includes="*.jar"/>
+            <fileset dir="lib/windows/common" includes="*.jar"/>
+            <fileset dir="lib/windows/x86" includes="*.jar"/>
+        </path>
+
+        <!-- linux x86 source classpath -->
+        <path id="linux.classpath.x86">
+            <fileset dir="lib/common" includes="*.jar"/>
+            <fileset dir="lib/linux/common" includes="*.jar"/>
+            <fileset dir="lib/linux/x86" includes="*.jar"/>
+        </path>
+
         <!-- this set of filters should contain all the substitutions needed -->
         <filterset id="version.filterset">
             <filter token="warning.generated-file" value="${warning.generated-file}"/>
@@ -162,6 +190,7 @@
     <!-- =================================================================== -->
     <target name="clean" depends="-init">
         <delete dir="${build.dir}" failonerror="false"/>
+    	<delete dir="libs" failonerror="false"/>
     </target>
 
     <!-- =================================================================== -->
@@ -184,9 +213,11 @@
     <!-- Compiles the source directory                                       -->
     <!-- =================================================================== -->
     <target name="build" depends="prepare">
-        <macro_compile os="${os.windows}"/>
-        <macro_jar os="${os.windows}"/>
-        <macro_jar os="${os.linux}"/>
+        <macro_compile os="${os.windows}" arch="x86"/>
+        <macro_jar os="${os.windows}" arch="x86"/>
+        <macro_jar os="${os.linux}" arch="x86"/>
+        <macro_compile os="${os.windows}" arch="amd64"/>
+        <macro_jar os="${os.windows}" arch="amd64"/>
     </target>
 
     <!-- ================================================================== -->
@@ -239,8 +270,10 @@
 
         <macro_generate_executables/>
 
-        <macro_standalone os="${os.windows}"/>
-        <macro_standalone os="${os.linux}"/>
+        <macro_standalone_windows arch="x86"/>
+        <macro_standalone_linux arch="x86"/>
+        <macro_standalone_windows arch="amd64"/>
+    	<delete dir="libs" failonerror="false"/>
     </target>
 
     <!-- =================================================================== -->
@@ -308,18 +341,26 @@
 
     <macrodef name="macro_jar">
         <attribute name="os"/>
-        <sequential>
+        <attribute name="arch"/>
+        	<sequential>
+			<delete includeemptydirs="true" failonerror="false">
+				<fileset dir="${basedir}/libs" includes="**/*"/>
+			</delete>
             <mkdir dir="${build.dir}/@{os}/lib"/>
-            <manifestclasspath property="@{os}.jar.classpath" jarfile="${jar.package}">
+			<copy todir="${basedir}/libs">
+                <fileset dir="lib/common" includes="*.jar"/>
+                <fileset dir="lib/@{os}/common" includes="*.jar"/>
+                <fileset dir="lib/@{os}/@{arch}" includes="*.jar"/>
+			</copy>
+        	<manifestclasspath property="@{os}.jar.classpath.@{arch}" jarfile="${jar.package}">
                 <classpath>
-                    <fileset dir="lib/common" includes="*.jar"/>
-                    <fileset dir="lib/@{os}" includes="*.jar"/>
+                    <fileset dir="libs" includes="*.jar"/>
                 </classpath>
             </manifestclasspath>
             <manifest file="${build.dir}/@{os}/MANIFEST.MF">
                 <attribute name="Built-By" value="${user.name}"/>
                 <attribute name="Main-Class" value="${class.start}"/>
-                <attribute name="Class-Path" value="${@{os}.jar.classpath}"/>
+                <attribute name="Class-Path" value="${@{os}.jar.classpath.@{arch}}"/>
             </manifest>
             <jar basedir="${classes.dir}" destfile="${build.dir}/@{os}/lib/${jar.package}"
                  manifest="${build.dir}/@{os}/MANIFEST.MF">
@@ -332,20 +373,43 @@
 
     <macrodef name="macro_compile">
         <attribute name="os"/>
+        <attribute name="arch"/>
         <sequential>
             <mkdir dir="${classes.dir}"/>
             <javac failonerror="true" srcdir="${src.java.dir}" destdir="${classes.dir}" target="1.6" source="1.6" includeantruntime="false">
-                <classpath refid="@{os}.classpath"/>
+                <classpath refid="@{os}.classpath.@{arch}"/>
             </javac>
         </sequential>
     </macrodef>
 
-    <macrodef name="macro_standalone">
-        <attribute name="os"/>
+    <macrodef name="macro_standalone_linux">
+        <attribute name="arch"/>
         <sequential>
-            <zip destfile="${dist.dir}/@{os}/${name.package}${version.major}.${version.minor}.${version.patch}${version.extra}${version.extra1}-@{os}.zip">
-                <zipfileset file="build/@{os}/lib/${jar.package}" prefix="${name.package}"/>
-                <zipfileset file="run.${ext.@{os}}" prefix="${name.package}" filemode="755"/>
+            <zip destfile="${dist.dir}/linux/${name.package}${version.major}.${version.minor}.${version.patch}${version.extra}${version.extra1}-linux_@{arch}.zip">
+                <zipfileset file="build/linux/lib/${jar.package}" prefix="${name.package}"/>
+                <zipfileset file="run.${ext.linux}" prefix="${name.package}" filemode="755"/>
+                <zipfileset file="license.txt" prefix="${name.package}"/>
+                <zipfileset file="release_notes.txt" prefix="${name.package}"/>
+                <zipfileset file="log4j.properties" prefix="${name.package}"/>
+                <zipfileset file="cars_def.dtd" prefix="${name.package}"/>
+                <zipfileset file="ecu_defs.dtd" prefix="${name.package}"/>
+                <zipfileset file="logger.dtd" prefix="${name.package}"/>
+                <zipfileset file="profile.dtd" prefix="${name.package}"/>
+                <zipfileset dir="plugins" prefix="${name.package}/plugins" excludes="lm2_mts.plugin"/>
+                <zipfileset dir="lib/common" prefix="${name.package}/libs" excludes="com4j*"/>
+                <zipfileset dir="lib/linux/common" prefix="${name.package}/libs"/>
+                <zipfileset dir="lib/linux/@{arch}" prefix="${name.package}/libs"/>
+                <zipfileset dir="src" prefix="${name.package}/src" excludes="**/*.template"/>
+            </zip>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="macro_standalone_windows">
+        <attribute name="arch"/>
+        <sequential>
+            <zip destfile="${dist.dir}/windows/${name.package}${version.major}.${version.minor}.${version.patch}${version.extra}${version.extra1}-windows_@{arch}.zip">
+                <zipfileset file="build/windows/lib/${jar.package}" prefix="${name.package}"/>
+                <zipfileset file="run.${ext.windows}" prefix="${name.package}" filemode="755"/>
                 <zipfileset file="license.txt" prefix="${name.package}"/>
                 <zipfileset file="release_notes.txt" prefix="${name.package}"/>
                 <zipfileset file="log4j.properties" prefix="${name.package}"/>
@@ -354,8 +418,9 @@
                 <zipfileset file="logger.dtd" prefix="${name.package}"/>
                 <zipfileset file="profile.dtd" prefix="${name.package}"/>
                 <zipfileset dir="plugins" prefix="${name.package}/plugins"/>
-                <zipfileset dir="lib/common" prefix="${name.package}/lib/common"/>
-                <zipfileset dir="lib/@{os}" prefix="${name.package}/lib/@{os}"/>
+                <zipfileset dir="lib/common" prefix="${name.package}/libs" excludes="com4j*.dll"/>
+                <zipfileset dir="lib/windows/common" prefix="${name.package}/libs"/>
+                <zipfileset dir="lib/windows/@{arch}" prefix="${name.package}/libs"/>
                 <zipfileset dir="src" prefix="${name.package}/src" excludes="**/*.template"/>
             </zip>
         </sequential>
