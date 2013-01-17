@@ -3,20 +3,52 @@
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="src" path="src/main/resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/common/com4j.jar"/>
-	<classpathentry kind="lib" path="lib/windows/common/j3dcore.jar"/>
+	<classpathentry kind="lib" path="lib/common/com4j.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://com4j.kohsuke.org/apidocs/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/windows/common/j3dcore.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/1_2_api_beta/j3dapi/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/windows/common/j3dutils.jar"/>
-	<classpathentry kind="lib" path="lib/windows/common/vecmath.jar"/>
+	<classpathentry kind="lib" path="lib/windows/common/vecmath.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/1_2_api_beta/j3dapi"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/windows/common/Graph3d.jar"/>
 	<classpathentry kind="lib" path="lib/common/jama-1.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/common/BareBonesBrowserLaunch.jar"/>
-	<classpathentry kind="lib" path="lib/common/jep.jar"/>
-	<classpathentry kind="lib" path="lib/common/Jama.jar"/>
+	<classpathentry kind="lib" path="lib/common/BareBonesBrowserLaunch.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/romraider/lib/common/BareBonesBrowserLaunch.jar!/doc"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/common/jep.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://www.singularsys.com/jep/doc/javadoc/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/common/Jama.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://math.nist.gov/javanumerics/jama/doc/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/common/jamlab.jar"/>
 	<classpathentry kind="lib" path="lib/common/JFontChooser.jar"/>
-	<classpathentry kind="lib" path="lib/common/log4j-1.2.14.jar"/>
+	<classpathentry kind="lib" path="lib/common/log4j-1.2.14.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://logging.apache.org/log4j/1.2/apidocs/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/common/swing-layout-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/common/cmu_time_awb.jar"/>
+	<classpathentry kind="lib" path="lib/common/cmu_time_awb.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://freetts.sourceforge.net/javadoc/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/common/cmu_us_kal.jar"/>
 	<classpathentry kind="lib" path="lib/common/cmudict04.jar"/>
 	<classpathentry kind="lib" path="lib/common/cmulex.jar"/>
@@ -42,6 +74,10 @@
 			<attribute name="javadoc_location" value="http://twall.github.com/jna/3.4.0/javadoc/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/common/phidget21.jar"/>
+	<classpathentry kind="lib" path="lib/common/phidget21.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://www.phidgets.com/documentation/web/javadoc/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

@@ -66,13 +66,14 @@ public class ECUExec {
 
         // 64-bit won't work with the native libs (e.g. serial rxtx) but won't
         // fail until we actually try to use them we'll just warn here
-        if (!JREChecker.is32bit() &&
-                !containsLoggerArg(args)) {
+        if (!JREChecker.is32bit()) {
             showMessageDialog(null, 
-                "Incompatible JRE detected.\n" +
+                "WARNING.\n" +
                 PRODUCT_NAME +
-                " requires a 32-bit JRE for some operations.\nSome features may be unavailable.", 
-                "JRE Incompatibility Warning", 
+                " 64bit version has limited functionality, only COM " +
+                "ports work in the Logger which means the Openport 2.0 will " +
+                "not work.", 
+                "Application Warning", 
                 WARNING_MESSAGE);
         }
 //        if (!JREChecker.is32bit() &&
