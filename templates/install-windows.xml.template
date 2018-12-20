@@ -54,21 +54,8 @@
 
             <file src="post-install-tasks.bat" targetdir="$INSTALL_PATH"/>
 
-            <file src="plugins/aem2.plugin" targetdir="$INSTALL_PATH/plugins"/>
-            <file src="plugins/aem.plugin" targetdir="$INSTALL_PATH/plugins"/>
-            <file src="plugins/aem.xwifi.plugin" targetdir="$INSTALL_PATH/plugins"/>
-            <file src="plugins/apsx.plugin" targetdir="$INSTALL_PATH/plugins"/>
-            <file src="plugins/fourteenpoint7.plugin" targetdir="$INSTALL_PATH/plugins"/>
-            <file src="plugins/ecotrons.plugin" targetdir="$INSTALL_PATH/plugins"/>
-            <file src="plugins/innovate.plugin" targetdir="$INSTALL_PATH/plugins"/>
-            <file src="plugins/lm2_mts.plugin" targetdir="$INSTALL_PATH/plugins"/>
-            <file src="plugins/mrf.plugin" targetdir="$INSTALL_PATH/plugins"/>
-            <file src="plugins/phidget_ik.plugin" targetdir="$INSTALL_PATH/plugins"/>
-            <file src="plugins/plx.plugin" targetdir="$INSTALL_PATH/plugins"/>
-            <file src="plugins/te.plugin" targetdir="$INSTALL_PATH/plugins"/>
-            <file src="plugins/txs_tuner.plugin" targetdir="$INSTALL_PATH/plugins"/>
-            <file src="plugins/txs_utec.plugin" targetdir="$INSTALL_PATH/plugins"/>
-            <file src="plugins/zt2.plugin" targetdir="$INSTALL_PATH/plugins"/>
+            <fileset dir="plugins" targetdir="$INSTALL_PATH/plugins"/>
+            <fileset dir="customize" targetdir="$INSTALL_PATH/customize"/>
 
             <fileset dir="lib/common" targetdir="$INSTALL_PATH/lib/common"/>
             <fileset dir="lib/windows" targetdir="$INSTALL_PATH/lib/windows"/>
@@ -90,6 +77,7 @@
                 <exclude name="plugins/txs_tuner.plugin"/>
                 <exclude name="plugins/txs_utec.plugin"/>
                 <exclude name="plugins/zt2.plugin"/>
+                <exclude name="customize/**"/>
             </updatecheck>
 
 	        <executable targetfile="$INSTALL_PATH/post-install-tasks.bat" stage="postinstall"
