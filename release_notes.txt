@@ -1,4 +1,4 @@
-                - RomRaider 0.5.9 RC3 -
+                - RomRaider 0.6.0 NCS1 -
             Open-Source ECU Tuning -- www.romraider.com
 
 
@@ -33,6 +33,12 @@ RomRaider is still in beta status and changing frequently,
 documentation may be incomplete or out of date.
 
 --------------------------------------------
+- 0.6.0 NCS1 Notes (12/22/2018) -
+--------------------------------------------
+Testing release for Nissan logging feature
+
+
+--------------------------------------------
 - 0.5.9 RC3 Notes (09/28/2016) -
 --------------------------------------------
 This is the latest release of the RomRaider from the GitHub repo:
@@ -54,6 +60,13 @@ Status of these items and more can be viewed at:
 --------------
 - Change Log -
 --------------
+
+0.6.0 NCS1 (12/22/2018)
+
+- Logger
+  - Testing release for Nissan logging feature
+  - LTV table names can be overridden in the ./customize/ncslearning.properties file
+
 
 0.5.9 RC3 (09/28/2016)
 ----------------------------------
