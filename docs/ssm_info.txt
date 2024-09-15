@@ -1,4 +1,4 @@
-The subaru select monitor protocol uses an ISO9141 interface and uses UART settings: 4800 bps n, 8, 1
+The Subaru Select Monitor protocol uses an ISO9141 interface and uses UART settings: 4800 bps n, 8, 1
 All data is sent and recieved using small packets that all share a common header.
 
 
@@ -42,11 +42,11 @@ These are the known commands:
 0xB8 Write single address
 0xBF ECU init
 
-After the command byte is the read mode byte, if reading continious the ECU will continue to output until it recieves another command.
+After the command byte is the read mode byte, if reading continues the ECU will continue to output until it receives another command.
 These are the known modes:
 
 0x00 Read Once
-0x01 Read Continious
+0x01 Read Continuous
 
 -------------------------------- Command Formats --------------------------------
 
@@ -256,6 +256,7 @@ The individual bits are flags that will be set to one if the parameter can be re
 2 -------------------------
 1 -------------------------
 0 -------------------------
+
 ********** BYTE 21 **********
 7 Neutral Position Switch
 6 Idle Switch
@@ -265,17 +266,17 @@ The individual bits are flags that will be set to one if the parameter can be re
 2 Power Steering Switch
 1 Air Conditioning Switch
 0 -------------------------
-********** BYTE 22 **********
-7 Handle Switchv
-6 Starter Switch
 
+********** BYTE 22 **********
+7 Handle Switch
+6 Starter Switch
 5 Front O2 Rich Signal
 4 Rear O2 Rich Signal
-
 3 Front O2 #2 Rich Signal
 2 Knock Signal 1
 1 Knock Signal 2
 0 Electrical Load Signal
+
 ********** BYTE 23 **********
 7 Crank Position Sensor
 6 Cam Position Senso
