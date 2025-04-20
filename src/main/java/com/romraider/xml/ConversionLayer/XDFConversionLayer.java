@@ -1,6 +1,6 @@
 /*
  * RomRaider Open-Source Tuning, Logging and Reflashing
- * Copyright (C) 2006-2022 RomRaider.com
+ * Copyright (C) 2006-2025 RomRaider.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ import org.xml.sax.SAXException;
 
 import com.romraider.util.HexUtil;
 import com.romraider.util.ResourceUtil;
+import com.romraider.xml.RomAttributeParser;
 
 public class XDFConversionLayer extends ConversionLayer {
     protected static final ResourceBundle rb = new ResourceUtil().getBundle(
@@ -67,7 +68,7 @@ public class XDFConversionLayer extends ConversionLayer {
         Node axisNode;
         Node flagsNodeTable;
     }
-    
+
     @Override
     public String getDefinitionPickerInfo() {
         return rb.getString("LOADINGWARNING");
@@ -295,13 +296,13 @@ public class XDFConversionLayer extends ConversionLayer {
             targetTable.setAttribute("size" + id, "" + staticCells.size());
             targetTable.removeAttribute("endian");
             targetTable.removeAttribute("storagetype");
-            
+
             for(String label : staticCells)
             {
                 Element data = doc.createElement("data");
                 data.setTextContent(label);
             	targetTable.appendChild(data);
-            	
+
                 if (numDigitsStatic == -1) {
                     // Assume the format from the static data
                     String split[] = label.split("\\.");
@@ -397,14 +398,14 @@ public class XDFConversionLayer extends ConversionLayer {
     private void postProcessTable(Element tableNodeRR) {
         int validAxis = 0;
         int nodeCountTable = tableNodeRR.getChildNodes().getLength();
-        
+
         LinkedList <Element> nodesToRemove = new LinkedList <Element> ();
         for (int i = 0; i < nodeCountTable; i++) {
             Element n = (Element) tableNodeRR.getChildNodes().item(i);
             if (n.getNodeName().equalsIgnoreCase("table")) {
                 if (n.hasAttribute("storageaddress") || n.getAttributeNode("type").getValue().contains("Static")) {
                     validAxis++;
-                    
+
                     // Use the sizes of the X and Y axis
                     // for the main table
                     Attr sizex = n.getAttributeNode("sizex");
@@ -416,7 +417,7 @@ public class XDFConversionLayer extends ConversionLayer {
                 } else {
                     Element scalingNode = getScalingNodeForTable(tableNodeRR);
                     Element axisScalingNode = getScalingNodeForTable(n);
-                    
+
                     // 2D Tables work different in XDFs
                     // We have to use the unit of the "missing" axis for the main table
                     if (scalingNode != null && axisScalingNode != null && !scalingNode.hasAttribute("units")) {
@@ -482,7 +483,14 @@ public class XDFConversionLayer extends ConversionLayer {
                 Node offsetNode = n.getAttributes().getNamedItem("offset");
 
                 if (offsetNode != null) {
-                    offset = Integer.parseInt(offsetNode.getNodeValue());
+                    String nv = offsetNode.getNodeValue();
+                    if (nv.length() > 2 && nv.substring(0, 2).equalsIgnoreCase("0x")) {
+                        // node value is hex in string format
+                        offset = RomAttributeParser.parseHexString(nv);
+                    } else {
+                        // node value is decimal in string format
+                        offset = Integer.parseInt(nv);
+                    }
 
                     if (!n.getAttributes().getNamedItem("subtract").getNodeValue().equals("0")) {
                         offset *= -1;
