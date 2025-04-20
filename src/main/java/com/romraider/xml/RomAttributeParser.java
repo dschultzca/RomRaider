@@ -1,6 +1,6 @@
 /*
  * RomRaider Open-Source Tuning, Logging and Reflashing
- * Copyright (C) 2006-2022 RomRaider.com
+ * Copyright (C) 2006-2025 RomRaider.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ import com.romraider.Settings;
 import com.romraider.maps.Table;
 import com.romraider.maps.Table1DView;
 import com.romraider.util.ByteUtil;
+import com.romraider.util.HexUtil;
 
 public final class RomAttributeParser {
 
@@ -45,15 +46,7 @@ public final class RomAttributeParser {
     }
 
     public static int parseHexString(String input) {
-        if (input.equals("0")) {
-            return 0;
-        }
-        else if (input.length() > 2 && input.substring(0, 2).equalsIgnoreCase("0x")) {
-            return Integer.parseInt(input.substring(2), 16);
-        }
-        else {
-            return Integer.parseInt(input, 16);
-        }
+        return HexUtil.hexToInt(input);
     }
 
     public static int parseStorageType(String input) {
@@ -95,7 +88,7 @@ public final class RomAttributeParser {
             return Settings.LINEAR;
         }
     }
-    
+
     public static Table1DView.Table1DType parseTableAxis(String input) {
         //4 and 5 are only for backwards compatibilty, is anybody even using this?
         if (input.equalsIgnoreCase("X Axis") || input.equalsIgnoreCase("Static X Axis") || input.equalsIgnoreCase("4")) {
@@ -108,7 +101,7 @@ public final class RomAttributeParser {
         	return Table1DView.Table1DType.NO_AXIS;
         }
     }
-    
+
     public static Table.TableType parseTableType(String input) {
         if (input.equalsIgnoreCase("3D") || input.equalsIgnoreCase(Table.TableType.TABLE_3D.getMarshallingString())) {
             return Table.TableType.TABLE_3D;
@@ -127,16 +120,16 @@ public final class RomAttributeParser {
             return Table.TableType.TABLE_1D;
         }
     }
-    
+
     //This assumes the bits inside the mask aren't spread. OK = 11110000, Not OK = 11001100
-    public static long parseByteValueMasked(byte[] input, Settings.Endian endian, int address, int length, boolean signed, int mask) throws ArrayIndexOutOfBoundsException, IndexOutOfBoundsException { 	 	
+    public static long parseByteValueMasked(byte[] input, Settings.Endian endian, int address, int length, boolean signed, int mask) throws ArrayIndexOutOfBoundsException, IndexOutOfBoundsException {
     	long tempValue = parseByteValue(input,endian,address,length,signed) & mask;
-    	
+
     	byte index = ByteUtil.firstOneOfMask(mask);
-    	
+
     	return tempValue >> index;
     }
-    
+
     public static long parseByteValue(byte[] input, Settings.Endian endian, int address, int length, boolean signed) throws ArrayIndexOutOfBoundsException, IndexOutOfBoundsException {
         try {
             long output = 0L;
@@ -252,7 +245,7 @@ public final class RomAttributeParser {
         else if (input.substring(input.length() - 1).equalsIgnoreCase("b")) {
             return Integer.parseInt(input.substring(0, input.length() - 1));
         }
-        
+
         return Integer.parseInt(input);
     }
 
