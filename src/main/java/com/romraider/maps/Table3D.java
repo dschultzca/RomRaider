@@ -572,13 +572,18 @@ public class Table3D extends Table {
 			}
 		}
 
-		double valueX1 = linearInterpolation(input_x, axisXData[startX].getRealValue(),
-				axisXData[endX].getRealValue(), tableData[startX][startY].getRealValue(),
-				tableData[endX][startY].getRealValue());
+		double valueX1 = linearInterpolation(input_x,
+			    axisXData[startX].getRealValue(),
+			    axisXData[endX].getRealValue(),
+			    tableData[startX][startY].getRealValue(),
+			    tableData[endX][startY].getRealValue());
 
-		double valueX2 = linearInterpolation(input_x, axisXData[startX].getRealValue(),
-				axisXData[endX].getRealValue(), tableData[endX][startY].getRealValue(),
-				tableData[endX][startY].getRealValue());
+		double valueX2 = linearInterpolation(input_x,
+			    axisXData[startX].getRealValue(),
+			    axisXData[endX].getRealValue(),
+			    tableData[startX][endY].getRealValue(),
+			    tableData[endX][endY].getRealValue());
+
 
 		return linearInterpolation(input_y, axisYData[startY].getRealValue(), axisYData[endY].getRealValue(),
 				valueX1, valueX2);
