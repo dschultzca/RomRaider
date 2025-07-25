@@ -1,6 +1,6 @@
 /*
  * RomRaider Open-Source Tuning, Logging and Reflashing
- * Copyright (C) 2006-2021 RomRaider.com
+ * Copyright (C) 2006-2025 RomRaider.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -279,6 +279,7 @@ public class Table1DView extends TableView {
             }
 
             int startIdx = data.length;
+            double currentErrorToLiveValue = Double.POSITIVE_INFINITY;
             for (int i = 0; i < data.length; i++) {
                 double currentValue = 0.0;
                 if(table.isStaticDataTable() && null != data[i].getStaticText()) {
@@ -290,14 +291,14 @@ public class Table1DView extends TableView {
                 } else {
                     currentValue = data[i].getDataCell().getRealValue();
                 }
-
-                if (liveValue == currentValue) {
-                    startIdx = i;
-                    break;
-                } else if (liveValue < currentValue){
-                    startIdx = i-1;
-                    break;
-                }
+                
+            	if(Math.abs(currentValue - liveValue) < currentErrorToLiveValue) 
+            	{
+            		currentErrorToLiveValue = Math.abs(currentValue - liveValue);
+            		startIdx = i;
+            		
+            		if(currentErrorToLiveValue <= 0.001) break;
+            	}
             }
 
             setLiveDataIndex(startIdx);
