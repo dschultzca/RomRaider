@@ -40,6 +40,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -54,6 +55,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
@@ -67,6 +69,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
+import javax.swing.TransferHandler;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.TreePath;
 
@@ -193,9 +196,45 @@ public class ECUEditor extends AbstractFrame {
         toolBarPanel.setVisible(true);
 
         this.add(toolBarPanel, BorderLayout.NORTH);
+        setupDragAndDrop();
         validate();
     }
 
+    public void setupDragAndDrop()
+    {
+        setTransferHandler(new TransferHandler() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+            public boolean canImport(TransferSupport support) {
+                // Accept drops of files only
+                return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+            }
+
+            @Override
+            public boolean importData(TransferSupport support) {
+                if (!canImport(support)) {
+                    return false;
+                }
+
+                try {
+                    @SuppressWarnings("unchecked")
+                    List<File> droppedFiles =
+                            (List<File>) support.getTransferable()
+                                    .getTransferData(DataFlavor.javaFileListFlavor);
+
+                    for (File file : droppedFiles) {
+                        openImage(file);
+                    }
+                    return true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return false;
+            }
+        });
+    }
+    
     public void checkDefinitions() {
         if (settings.getEcuDefinitionFiles().size() <= 0) {
             // no ECU definitions configured - let user choose to get latest or configure later
