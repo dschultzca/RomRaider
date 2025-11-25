@@ -1,6 +1,6 @@
 /*
  * RomRaider Open-Source Tuning, Logging and Reflashing
- * Copyright (C) 2006-2022 RomRaider.com
+ * Copyright (C) 2006-2025 RomRaider.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,11 +42,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
+import java.util.regex.PatternSyntaxException;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -128,24 +130,46 @@ public class Rom extends DefaultMutableTreeNode implements Serializable  {
             currentParent.add(newNode);
         }
     }
-
-    public void refreshDisplayedTables() {
-        // Remove all nodes from the ROM tree node.
+    
+    public List<TreePath> refreshDisplayedTables() {
+    	return refreshDisplayedTables(null);
+    }
+    
+    /*
+     * Refreshes the list of tables for a rom. Takes a regex (or null) as input for filtering.
+     * Outputs a list of paths that should be expanded based on the filter.
+     */
+    public List<TreePath> refreshDisplayedTables(String filterText) {
         super.removeAllChildren();
 
         Settings settings = SettingsManager.getSettings();
+        boolean shouldFilter = filterText != null && !filterText.isEmpty();
+        boolean anyTablesAdded = false;
 
-        // Add nodes to ROM tree.
+        // Collect TreePaths for expansion
+        List<TreePath> pathsToExpand = new ArrayList<TreePath>();
+
         for (TableTreeNode tableTreeNode : tableNodes.values()) {
             Table table = tableTreeNode.getTable();
+
+            boolean addToTree = true;
+            if (shouldFilter) {
+                try {
+                    addToTree = table.getName().toLowerCase().contains(filterText.toLowerCase());
+                } catch (PatternSyntaxException exception) {
+                    addToTree = false;
+                }
+            }
+
+            if (!addToTree) continue;
+            anyTablesAdded = true;
 
             String[] categories = table.getCategory().split("//");
 
             if (settings.isDisplayHighTables() || settings.getUserLevel() >= table.getUserLevel()) {
-
                 DefaultMutableTreeNode currentParent = this;
 
-                for(int i=0; i < categories.length; i++) {
+                for (int i = 0; i < categories.length; i++) {
                     boolean categoryExists = false;
 
                     for (int j = 0; j < currentParent.getChildCount(); j++) {
@@ -156,18 +180,29 @@ public class Rom extends DefaultMutableTreeNode implements Serializable  {
                         }
                     }
 
-                    if(!categoryExists) {
+                    if (!categoryExists) {
                         CategoryTreeNode categoryNode = new CategoryTreeNode(categories[i]);
-                        sortedAdd(currentParent,categoryNode);
+                        sortedAdd(currentParent, categoryNode);
                         currentParent = categoryNode;
                     }
 
-                    if(i == categories.length - 1){
+                    // Only add last category in path for expansion
+                    if (shouldFilter) {
+                        pathsToExpand.add(new TreePath(currentParent.getPath()));
+                    }
+
+                    if (i == categories.length - 1) {
                         sortedAdd(currentParent, tableTreeNode);
                     }
                 }
             }
         }
+
+        if (!anyTablesAdded && shouldFilter) {
+            sortedAdd(this, new DefaultMutableTreeNode(rb.getString("NOMATCHES")));
+        }
+
+        return pathsToExpand;
     }
 
     public void addTableByName(Table table) {

@@ -1,6 +1,6 @@
 /*
  * RomRaider Open-Source Tuning, Logging and Reflashing
- * Copyright (C) 2006-2022 RomRaider.com
+ * Copyright (C) 2006-2025 RomRaider.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,6 +99,7 @@ import com.romraider.swing.ECUEditorMenuBar;
 import com.romraider.swing.ECUEditorToolBar;
 import com.romraider.swing.JProgressPane;
 import com.romraider.swing.MDIDesktopPane;
+import com.romraider.swing.RomFilterPanel;
 import com.romraider.swing.RomTree;
 import com.romraider.swing.RomTreeRootNode;
 import com.romraider.swing.TableFrame;
@@ -149,11 +150,16 @@ public class ECUEditor extends AbstractFrame {
 
         rightScrollPane = new JScrollPane(rightPanel,
                 VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+       
         leftScrollPane = new JScrollPane(imageList,
                 VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
+        JPanel leftAreaWithFilterBox = new JPanel(new BorderLayout());
+        leftAreaWithFilterBox.add(leftScrollPane, BorderLayout.CENTER);
+        leftAreaWithFilterBox.add(new RomFilterPanel(imageRoot, imageList), BorderLayout.SOUTH);
+        
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                leftScrollPane, rightScrollPane);
+        		leftAreaWithFilterBox, rightScrollPane);
         splitPane.setDividerSize(3);
         splitPane.setDividerLocation(settings.getSplitPaneLocation());
         splitPane.addPropertyChangeListener(this);
@@ -167,7 +173,7 @@ public class ECUEditor extends AbstractFrame {
 
         //set remaining window properties
         setIconImage(editorIcon.getImage());
-
+ 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         addWindowListener(this);
         setTitle(titleText);
